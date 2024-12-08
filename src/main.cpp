@@ -32,17 +32,17 @@ Parameters gravParams = {.screenWidth = 1280,
 Parameters zeroGravParams = {.screenWidth = 1280,
                              .screenHeight = 720,
                              .particleCount = 4000,
-                             .particleRadius = 2.0f,
+                             .particleRadius = 2.9f,
                              .collisionDamping = 0.5f,
                              .friction = 1.0f,
                              .gravity = 0.0,
-                             .smoothingMultiplier = 15.0f,
+                             .smoothingMultiplier = 9.1f,
                              .substeps = 8,
-                             .targetDensity = 2.1f,
-                             .pressureMultiplier = 800000.0f,
+                             .targetDensity = 4.5f,
+                             .pressureMultiplier = 1240000.0f,
                              .maxVelocity = 1000.0f,
                              .nearPressureMultiplier = -40000.0,
-                             .viscosity = 300.0,
+                             .viscosity = 150.0,
                              .maxAcceleration = 67.0f,
                              .mass = 100000.0f,
                              .mouseRadius = 100.0,
@@ -153,7 +153,7 @@ int main(void) {
             // TestSceneSchedule(solver.obstacles, dt);
             // NoObstaclesSchedule(solver.obstacles, dt);
             PlayerObstacleSchedule(solver.obstacles, dt);
-            player.update(dt);
+            player.update(dt, params);
         }
 
         // Rendering
