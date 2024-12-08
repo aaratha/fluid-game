@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "physics.hpp"
+#include "player.hpp"
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 #include "raylib-cpp.hpp"
@@ -35,13 +36,13 @@ Parameters zeroGravParams = {.screenWidth = 1280,
                              .collisionDamping = 0.5f,
                              .friction = 1.0f,
                              .gravity = 0.0,
-                             .smoothingMultiplier = 12.0f,
+                             .smoothingMultiplier = 15.0f,
                              .substeps = 8,
-                             .targetDensity = 4.0f,
+                             .targetDensity = 2.1f,
                              .pressureMultiplier = 800000.0f,
                              .maxVelocity = 1000.0f,
                              .nearPressureMultiplier = -40000.0,
-                             .viscosity = 200.0,
+                             .viscosity = 300.0,
                              .maxAcceleration = 67.0f,
                              .mass = 100000.0f,
                              .mouseRadius = 100.0,
@@ -66,6 +67,9 @@ std::vector<Obstacle> TestSceneObstacles{
     // 2, 200.0, 200.0})
 };
 
+std::vector<Obstacle> PlayerObstacle{
+    Obstacle(vec2(centerX, centerY), EXT_CIRCLE, 0.0, Rectangle{})};
+
 void TestSceneSchedule(std::vector<Obstacle>& obstacles, float dt) {
     obstacles[0].lerpRadius(200.0, 1, dt);
     obstacles[1].setPos(
@@ -77,8 +81,20 @@ void TestSceneSchedule(std::vector<Obstacle>& obstacles, float dt) {
 
 void NoObstaclesSchedule(std::vector<Obstacle>& obstacles, float dt) {}
 
+Player player =
+    Player(vec2(centerX, centerY), vec2(centerX, centerY), 0.05, 0.0);
+
+void PlayerObstacleSchedule(std::vector<Obstacle>& obstacles, float dt) {
+    float targRadius = 80.0;
+    obstacles[0].setPos(player.getPos());
+    if (player.getRadius() < targRadius) {
+        player.setRadius(lerp1D(player.getRadius(), targRadius, 0.05));
+        obstacles[0].setRadius(player.getRadius());
+    }
+}
+
 /// Set Obstacles
-std::vector<Obstacle> Obstacles = NoObstacles;
+std::vector<Obstacle> Obstacles = PlayerObstacle;
 
 int main(void) {
     // Initialization
@@ -135,7 +151,9 @@ int main(void) {
             solver.update(dt, params);
             // solver.obstacles[0].radius += dt * 10;
             // TestSceneSchedule(solver.obstacles, dt);
-            NoObstaclesSchedule(solver.obstacles, dt);
+            // NoObstaclesSchedule(solver.obstacles, dt);
+            PlayerObstacleSchedule(solver.obstacles, dt);
+            player.update(dt);
         }
 
         // Rendering

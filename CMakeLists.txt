@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(fluid-sim)
+project(fluid-game)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -90,6 +90,7 @@ set(SOURCES
     src/main.cpp
     src/utils.cpp
     src/physics.cpp
+    src/player.cpp
 )
 
 # Main executable target

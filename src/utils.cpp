@@ -13,6 +13,10 @@ float lerp1D(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
+vec2 lerp2D(vec2 a, vec2 b, float t) {
+    return a + Vector2Scale((b - a), t);
+}
+
 Kernels precomputeKernels(float radius) {
     Kernels kernels;
     kernels.poly6 = 315 / (64 * PI * pow(radius, 9));

@@ -25,5 +25,5 @@ else
 
     cmake --build build
     echo "Running the executable..."
-    ./build/fluid-sim
+    ./build/fluid-game
 fi
