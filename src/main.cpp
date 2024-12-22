@@ -96,6 +96,37 @@ void PlayerObstacleSchedule(std::vector<Obstacle>& obstacles, float dt) {
 /// Set Obstacles
 std::vector<Obstacle> Obstacles = PlayerObstacle;
 
+struct SliderInfo {
+    const char* label;  // Display label
+    float* value;       // Reference to the parameter
+    float min;          // Minimum value
+    float max;          // Maximum value
+    float yOffset;      // Vertical offset for placement
+};
+
+void createSliders(Parameters& params) {
+    SliderInfo sliders[] = {
+        {"smoothing radius: ", &params.smoothingMultiplier, 1, 50, 40},
+        {"pressure multiplier: ", &params.pressureMultiplier, 0.1f, 10000000,
+         70},
+        {"max acceleration: ", &params.maxAcceleration, 0, 100, 100},
+        {"target density: ", &params.targetDensity, 0.0f, 50, 130},
+        {"radius: ", &params.particleRadius, 0, 20, 160},
+        {"viscosity: ", &params.viscosity, 0, 300, 190},
+        {"gravity: ", &params.gravity, -1000, 1000, 220},
+        {"near pressure: ", &params.nearPressureMultiplier, -100000, 100000,
+         250}};
+
+    // Loop through the sliders and create each one dynamically
+    for (const auto& slider : sliders) {
+        std::string labelText = slider.label + std::to_string(*slider.value);
+        const char* label = labelText.c_str();
+
+        GuiSliderBar((Rectangle){10, slider.yOffset, 120, 20}, NULL, label,
+                     slider.value, slider.min, slider.max);
+    }
+}
+
 int main(void) {
     // Initialization
     //---------------------------------------------------------
@@ -175,53 +206,7 @@ int main(void) {
 
         DrawFPS(10, 10);
 
-        std::string smoothingToString =
-            "smoothing radius: " + std::to_string(params.smoothingMultiplier);
-        const char* smoothing = smoothingToString.c_str();
-        GuiSliderBar((Rectangle){10, 40, 120, 20}, NULL, smoothing,
-                     &params.smoothingMultiplier, 1, 50);
-
-        std::string multiplierToString =
-            "pressure multiplier: " + std::to_string(params.pressureMultiplier);
-        const char* multiplier = multiplierToString.c_str();
-        GuiSliderBar((Rectangle){10, 70, 120, 20}, NULL, multiplier,
-                     &params.pressureMultiplier, 0.1, 10000000);
-
-        std::string accelerationToString =
-            "max acceleration" + std::to_string(params.maxAcceleration);
-        const char* acceleration = accelerationToString.c_str();
-        GuiSliderBar((Rectangle){10, 100, 120, 20}, NULL, acceleration,
-                     &params.maxAcceleration, 0, 100);
-
-        std::string densityToString =
-            "target density: " + std::to_string(params.targetDensity);
-        const char* density = densityToString.c_str();
-        GuiSliderBar((Rectangle){10, 130, 120, 20}, NULL, density,
-                     &params.targetDensity, 0.0, 50);
-
-        std::string radiusToString =
-            "radius: " + std::to_string(params.particleRadius);
-        const char* radius = radiusToString.c_str();
-        GuiSliderBar((Rectangle){10, 160, 120, 20}, NULL, radius,
-                     &params.particleRadius, 0, 20);
-
-        std::string viscosityToString =
-            "viscosity: " + std::to_string(params.viscosity);
-        const char* viscosity = viscosityToString.c_str();
-        GuiSliderBar((Rectangle){10, 190, 120, 20}, NULL, viscosity,
-                     &params.viscosity, 0, 300);
-
-        std::string gravityToString =
-            "gravity: " + std::to_string(params.gravity);
-        const char* gravity = gravityToString.c_str();
-        GuiSliderBar((Rectangle){10, 220, 120, 20}, NULL, gravity,
-                     &params.gravity, -1000, 1000);
-
-        std::string nearPressureToString =
-            "near pressure: " + std::to_string(params.nearPressureMultiplier);
-        const char* nearPressure = nearPressureToString.c_str();
-        GuiSliderBar((Rectangle){10, 250, 120, 20}, NULL, nearPressure,
-                     &params.nearPressureMultiplier, -100000, 100000);
+        // createSliders(params);
 
         EndDrawing();
     }
