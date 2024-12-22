@@ -1,5 +1,5 @@
-#include <raylib.h>
 #include <iostream>
+#include <raylib.h>
 #include <string>
 #include <vector>
 
@@ -70,146 +70,159 @@ std::vector<Obstacle> TestSceneObstacles{
 std::vector<Obstacle> PlayerObstacle{
     Obstacle(vec2(centerX, centerY), EXT_CIRCLE, 0.0, Rectangle{})};
 
-void TestSceneSchedule(std::vector<Obstacle>& obstacles, float dt) {
-    obstacles[0].lerpRadius(200.0, 1, dt);
-    obstacles[1].setPos(
-        vec2(centerX + 420 * sin(GetTime()), centerY + 70 * cos(GetTime())));
-    obstacles[1].setRadius(50 + 30 * cos(GetTime()));
-    obstacles[2].setPos(vec2(centerX + 260 * sin(GetTime() * 8),
-                             centerY + 260 * cos(GetTime() * 8)));
+void TestSceneSchedule(std::vector<Obstacle> &obstacles, float dt) {
+  obstacles[0].lerpRadius(200.0, 1, dt);
+  obstacles[1].setPos(
+      vec2(centerX + 420 * sin(GetTime()), centerY + 70 * cos(GetTime())));
+  obstacles[1].setRadius(50 + 30 * cos(GetTime()));
+  obstacles[2].setPos(vec2(centerX + 260 * sin(GetTime() * 8),
+                           centerY + 260 * cos(GetTime() * 8)));
 }
 
-void NoObstaclesSchedule(std::vector<Obstacle>& obstacles, float dt) {}
+void NoObstaclesSchedule(std::vector<Obstacle> &obstacles, float dt) {}
 
 Player player =
     Player(vec2(centerX, centerY), vec2(centerX, centerY), 0.05, 0.0);
 
-void PlayerObstacleSchedule(std::vector<Obstacle>& obstacles, float dt) {
-    float targRadius = 80.0;
-    obstacles[0].setPos(player.getPos());
-    if (player.getRadius() < targRadius) {
-        player.setRadius(lerp1D(player.getRadius(), targRadius, 0.05));
-        obstacles[0].setRadius(player.getRadius());
-    }
+void PlayerObstacleSchedule(std::vector<Obstacle> &obstacles, float dt) {
+  float targRadius = 80.0;
+  obstacles[0].setPos(player.getPos());
+  if (player.getRadius() < targRadius) {
+    player.setRadius(lerp1D(player.getRadius(), targRadius, 0.05));
+    obstacles[0].setRadius(player.getRadius());
+  }
 }
 
 /// Set Obstacles
 std::vector<Obstacle> Obstacles = PlayerObstacle;
 
 struct SliderInfo {
-    const char* label;  // Display label
-    float* value;       // Reference to the parameter
-    float min;          // Minimum value
-    float max;          // Maximum value
-    float yOffset;      // Vertical offset for placement
+  const char *label; // Display label
+  float *value;      // Reference to the parameter
+  float min;         // Minimum value
+  float max;         // Maximum value
+  float yOffset;     // Vertical offset for placement
 };
 
-void createSliders(Parameters& params) {
-    SliderInfo sliders[] = {
-        {"smoothing radius: ", &params.smoothingMultiplier, 1, 50, 40},
-        {"pressure multiplier: ", &params.pressureMultiplier, 0.1f, 10000000,
-         70},
-        {"max acceleration: ", &params.maxAcceleration, 0, 100, 100},
-        {"target density: ", &params.targetDensity, 0.0f, 50, 130},
-        {"radius: ", &params.particleRadius, 0, 20, 160},
-        {"viscosity: ", &params.viscosity, 0, 300, 190},
-        {"gravity: ", &params.gravity, -1000, 1000, 220},
-        {"near pressure: ", &params.nearPressureMultiplier, -100000, 100000,
-         250}};
+void createSliders(Parameters &params) {
+  SliderInfo sliders[] = {
+      {"smoothing radius: ", &params.smoothingMultiplier, 1, 50, 40},
+      {"pressure multiplier: ", &params.pressureMultiplier, 0.1f, 10000000, 70},
+      {"max acceleration: ", &params.maxAcceleration, 0, 100, 100},
+      {"target density: ", &params.targetDensity, 0.0f, 50, 130},
+      {"radius: ", &params.particleRadius, 0, 20, 160},
+      {"viscosity: ", &params.viscosity, 0, 300, 190},
+      {"gravity: ", &params.gravity, -1000, 1000, 220},
+      {"near pressure: ", &params.nearPressureMultiplier, -100000, 100000,
+       250}};
 
-    // Loop through the sliders and create each one dynamically
-    for (const auto& slider : sliders) {
-        std::string labelText = slider.label + std::to_string(*slider.value);
-        const char* label = labelText.c_str();
+  // Loop through the sliders and create each one dynamically
+  for (const auto &slider : sliders) {
+    std::string labelText = slider.label + std::to_string(*slider.value);
+    const char *label = labelText.c_str();
 
-        GuiSliderBar((Rectangle){10, slider.yOffset, 120, 20}, NULL, label,
-                     slider.value, slider.min, slider.max);
-    }
+    GuiSliderBar((Rectangle){10, slider.yOffset, 120, 20}, NULL, label,
+                 slider.value, slider.min, slider.max);
+  }
 }
 
 int main(void) {
-    // Initialization
-    //---------------------------------------------------------
-    const int screenWidth = params.screenWidth;
-    const int screenHeight = params.screenHeight;
+  // Initialization
+  //---------------------------------------------------------
+  const int screenWidth = params.screenWidth;
+  const int screenHeight = params.screenHeight;
 
-    // SetConfigFlags(FLAG_WINDOW_TRANSPARENT); // set window to transparent
-    rl::Window window(screenWidth, screenHeight, "SPH Fluid Simulation");
+  int toggleGravity = 0;
 
-    // Initialize solver and particles
-    Solver solver;
-    solver.obstacles = Obstacles;
-    solver.initializeCache(params.particleCount);
+  // SetConfigFlags(FLAG_WINDOW_TRANSPARENT); // set window to transparent
+  rl::Window window(screenWidth, screenHeight, "SPH Fluid Simulation");
 
-    // Initialize particle positions in a grid
-    int gridCols = static_cast<int>(sqrt(params.particleCount));
-    int gridRows = params.particleCount / gridCols +
-                   (params.particleCount % gridCols > 0 ? 1 : 0);
+  // Initialize solver and particles
+  Solver solver;
+  solver.obstacles = Obstacles;
+  solver.initializeCache(params.particleCount);
 
-    float gridSpacing =
-        params.particleRadius * 2.0f;  // Spacing based on particle radius
-    float startX =
-        (screenWidth - gridCols * gridSpacing) / 2.0f;  // Center horizontally
-    float startY =
-        (screenHeight - gridRows * gridSpacing) / 2.0f;  // Center vertically
+  // Initialize particle positions in a grid
+  int gridCols = static_cast<int>(sqrt(params.particleCount));
+  int gridRows = params.particleCount / gridCols +
+                 (params.particleCount % gridCols > 0 ? 1 : 0);
 
-    for (int i = 0; i < params.particleCount; ++i) {
-        int row = i / gridCols;
-        int col = i % gridCols;
+  float gridSpacing =
+      params.particleRadius * 2.0f; // Spacing based on particle radius
+  float startX =
+      (screenWidth - gridCols * gridSpacing) / 2.0f; // Center horizontally
+  float startY =
+      (screenHeight - gridRows * gridSpacing) / 2.0f; // Center vertically
 
-        vec2 gridPos =
-            vec2{startX + col * gridSpacing, startY + row * gridSpacing};
-        solver.positions[i] = gridPos;
-        solver.predictedPositions[i] = gridPos;
+  for (int i = 0; i < params.particleCount; ++i) {
+    int row = i / gridCols;
+    int col = i % gridCols;
+
+    vec2 gridPos = vec2{startX + col * gridSpacing, startY + row * gridSpacing};
+    solver.positions[i] = gridPos;
+    solver.predictedPositions[i] = gridPos;
+  }
+
+  bool pause = false; // Movement pause
+
+  SetTargetFPS(120); // Set our game to run at 120 frames-per-second
+  //----------------------------------------------------------
+  // GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+  GuiSetStyle(TEXTBOX, TEXT_SIZE, 20);
+
+  // Main game loop
+  while (!window.ShouldClose()) { // Detect window close button or ESC key
+    // Update
+    //-----------------------------------------------------
+    // Pause handling
+    if (IsKeyPressed(KEY_SPACE)) {
+      pause = !pause;
     }
 
-    bool pause = false;  // Movement pause
-
-    SetTargetFPS(120);  // Set our game to run at 120 frames-per-second
-    //----------------------------------------------------------
-
-    // Main game loop
-    while (!window.ShouldClose()) {  // Detect window close button or ESC key
-        // Update
-        //-----------------------------------------------------
-        // Pause handling
-        if (IsKeyPressed(KEY_SPACE)) {
-            pause = !pause;
-        }
-
-        if (!pause) {
-            float dt = GetFrameTime();
-            solver.update(dt, params);
-            // solver.obstacles[0].radius += dt * 10;
-            // TestSceneSchedule(solver.obstacles, dt);
-            // NoObstaclesSchedule(solver.obstacles, dt);
-            PlayerObstacleSchedule(solver.obstacles, dt);
-            player.update(dt, params);
-        }
-
-        // Rendering
-        //-----------------------------------------------------
-        window.ClearBackground(BLANK);
-
-        BeginDrawing();
-
-        for (int i = 0; i < params.particleCount; i++) {
-            DrawCircleV(solver.positions[i], params.particleRadius,
-                        solver.colors[i]);
-        }
-
-        DrawCircle(GetMouseX(), GetMouseY(),
-                   params.smoothingMultiplier * params.particleRadius,
-                   (Color){0, 255, 0, 100});
-
-        DrawCircleLines(GetMouseX(), GetMouseY(), params.mouseRadius, GREEN);
-
-        DrawFPS(10, 10);
-
-        // createSliders(params);
-
-        EndDrawing();
+    if (!pause) {
+      float dt = GetFrameTime();
+      solver.update(dt, params);
+      // solver.obstacles[0].radius += dt * 10;
+      // TestSceneSchedule(solver.obstacles, dt);
+      // NoObstaclesSchedule(solver.obstacles, dt);
+      PlayerObstacleSchedule(solver.obstacles, dt);
+      player.update(dt, params);
     }
 
-    return 0;
+    if (toggleGravity) {
+      params = gravParams;
+    } else {
+      params = zeroGravParams;
+    }
+
+    // Rendering
+    //-----------------------------------------------------
+    window.ClearBackground(BLANK);
+
+    BeginDrawing();
+
+    for (int i = 0; i < params.particleCount; i++) {
+      DrawCircleV(solver.positions[i], params.particleRadius, solver.colors[i]);
+    }
+
+    DrawCircle(GetMouseX(), GetMouseY(),
+               params.smoothingMultiplier * params.particleRadius,
+               (Color){0, 255, 0, 100});
+
+    DrawCircleLines(GetMouseX(), GetMouseY(), params.mouseRadius, GREEN);
+
+    DrawFPS(10, 10);
+
+    // createSliders(params);
+    DrawText("Move Obstacle: WASD", 10, 100, 20, GRAY);
+    DrawText("Attractive Force: Left-Click", 10, 120, 20, GRAY);
+    DrawText("Repulsive Force: Right-Click", 10, 140, 20, GRAY);
+    GuiGroupBox((Rectangle){floatWidth - 65, 15, 50, 52}, "Gravity");
+    GuiToggleGroup((Rectangle){floatWidth - 60, 20, 40, 20}, "Off\nOn",
+                   &toggleGravity);
+
+    EndDrawing();
+  }
+
+  return 0;
 }

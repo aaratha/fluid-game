@@ -10,7 +10,8 @@ if [ "$1" = "web" ]; then
 elif [ "$(uname)" = "Darwin" ]; then
     # macOS
     echo "Building for macOS..."
-    cmake . -B build -G "Unix Makefiles" -DPLATFORM=Desktop
+    cmake . -B build -DCMAKE_OSX_SYSROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -DPLATFORM=Desktop
+
     cmake --build build
 
     # Define app bundle structure
